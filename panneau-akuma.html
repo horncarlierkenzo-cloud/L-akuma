@@ -103,7 +103,7 @@ nav button { flex: 1; min-height: 44px; }
 
   <section id="login" class="panel login" hidden>
     <h2>Connexion au bot</h2>
-    <p>Tout reste sur ton téléphone : le token n'est envoyé qu'à Discord.</p>
+    <p>Le token reste sur ton téléphone. Il est envoyé à Discord uniquement via ton propre relais Cloudflare.</p>
     <ol>
       <li>Sur discord.com/developers/applications, crée une application puis un <b>Bot</b>. Copie son <b>token</b> et active <b>Server Members Intent</b>.</li>
       <li>Invite le bot avec les permissions : gérer les rôles, gérer les pseudos, gérer les salons, voir les salons, envoyer des messages.</li>
@@ -112,6 +112,7 @@ nav button { flex: 1; min-height: 44px; }
     </ol>
     <div id="login-err" class="banner" hidden></div>
     <form id="login-form" autocomplete="off">
+      <div class="field"><label for="l-relay">Adresse du relais Cloudflare</label><input id="l-relay" type="url" required placeholder="https://akuma-relais.ton-compte.workers.dev" autocomplete="off" autocapitalize="off" spellcheck="false"></div>
       <div class="field"><label for="l-token">Token du bot</label><input id="l-token" type="password" required autocomplete="off" autocapitalize="off" spellcheck="false"></div>
       <div class="field"><label for="l-guild">Identifiant du serveur</label><input id="l-guild" inputmode="numeric" pattern="[0-9]{15,25}" required autocomplete="off"></div>
       <div class="field"><label for="l-role">Nom du rôle des akumatisés</label><input id="l-role" value="Akumatisé" autocomplete="off"></div>
@@ -199,13 +200,13 @@ nav button { flex: 1; min-height: 44px; }
 <script>
 (() => {
   // ===================================================== DISCORD (aucun accès au DOM ici)
-  const API = 'https://discord.com/api/v10';
   const STORE = 'akuma.phone.v1';
   const MAX_DURATION_MIN = 7 * 24 * 60;
   const TYPE_LABELS = { 0: 'texte', 2: 'vocal', 4: 'catégorie', 5: 'annonces', 13: 'scène', 15: 'forum', 16: 'média' };
+  const relayBase = () => String(saved.relay || '').trim().replace(/\/+$/, '');
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-  let saved = { token: '', guildId: '', roleName: 'Akumatisé', akuma: {}, logs: [] };
+  let saved = { relay: '', token: '', guildId: '', roleName: 'Akumatisé', akuma: {}, logs: [] };
   try {
     const raw = JSON.parse(localStorage.getItem(STORE) || 'null');
     if (raw && typeof raw === 'object') saved = Object.assign(saved, raw);
@@ -241,9 +242,9 @@ nav button { flex: 1; min-height: 44px; }
     for (let attempt = 0; attempt < 4; attempt++) {
       let res;
       try {
-        res = await fetch(API + path, { method, headers, body: body !== undefined ? JSON.stringify(body) : undefined });
+        res = await fetch(relayBase() + '/api/v10' + path, { method, headers, body: body !== undefined ? JSON.stringify(body) : undefined });
       } catch (_) {
-        throw new Error('Impossible de joindre Discord (connexion coupée, ou le navigateur bloque la requête).');
+        throw new Error('Impossible de joindre le relais Cloudflare : vérifie son adresse dans l’écran de connexion et ta connexion.');
       }
       if (res.status === 429) {
         const j = await res.json().catch(() => ({}));
@@ -260,6 +261,7 @@ nav button { flex: 1; min-height: 44px; }
 
   let ctx = null;
   async function loadCtx() {
+    if (!relayBase()) throw new Error('Renseigne l’adresse de ton relais Cloudflare.');
     if (!saved.token || !saved.guildId) throw new Error('Renseigne le token et l’identifiant du serveur.');
     const me = await dc('GET', '/users/@me');
     const guild = await dc('GET', '/guilds/' + saved.guildId);
@@ -535,6 +537,7 @@ nav button { flex: 1; min-height: 44px; }
     state.connected = false;
     $('app').hidden = true;
     $('login').hidden = false;
+    $('l-relay').value = saved.relay || '';
     $('l-token').value = saved.token || '';
     $('l-guild').value = saved.guildId || '';
     $('l-role').value = saved.roleName || 'Akumatisé';
@@ -561,6 +564,7 @@ nav button { flex: 1; min-height: 44px; }
 
   $('login-form').addEventListener('submit', async (e) => {
     e.preventDefault();
+    saved.relay = $('l-relay').value.trim();
     saved.token = $('l-token').value.trim().replace(/^Bot\s+/i, '');
     saved.guildId = $('l-guild').value.trim();
     saved.roleName = $('l-role').value.trim() || 'Akumatisé';
@@ -766,7 +770,7 @@ nav button { flex: 1; min-height: 44px; }
 
   // ---- démarrage
   async function boot() {
-    if (!saved.token || !saved.guildId) return showLogin('');
+    if (!relayBase() || !saved.token || !saved.guildId) return showLogin('');
     if (await connect()) {
       await sweep();
       loadMembers();
