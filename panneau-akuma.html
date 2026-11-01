@@ -1,0 +1,852 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#14101c">
+<title>Panneau Akuma</title>
+<style>
+:root {
+  --bg: #14101c;
+  --panel: #1c1628;
+  --panel-2: #241c33;
+  --line: #342a47;
+  --fg: #ece6f7;
+  --muted: #9b8fb3;
+  --accent: #b06cff;
+  --accent-ink: #1a1026;
+  --danger: #ff5d7a;
+  --ok: #5fd6a3;
+  --warn: #ffc65c;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--fg); }
+body { font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; padding: 0 16px 80px; }
+.wrap { max-width: 980px; margin: 0 auto; }
+header { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; padding: 22px 0 14px; }
+h1 { margin: 0; font-size: 22px; letter-spacing: .02em; }
+h1 span { color: var(--accent); }
+.pill { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 999px; background: var(--panel); border: 1px solid var(--line); font-size: 13px; color: var(--muted); }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--warn); }
+.pill.ok .dot { background: var(--ok); }
+.pill.bad .dot { background: var(--danger); }
+.banner { margin: 0 0 14px; padding: 12px 14px; border-radius: 10px; background: #3a1621; border: 1px solid #6b2034; color: #ffd0da; }
+nav { display: flex; gap: 6px; border-bottom: 1px solid var(--line); margin-bottom: 16px; }
+nav button { background: none; border: 0; color: var(--muted); padding: 10px 14px; font: inherit; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+nav button[aria-selected="true"] { color: var(--fg); border-bottom-color: var(--accent); }
+button, input, select, textarea { font: inherit; color: var(--fg); }
+input, select, textarea { background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; min-width: 0; }
+input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.btn { background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 8px 14px; cursor: pointer; }
+.btn:hover { border-color: var(--accent); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; }
+.btn.danger { background: var(--danger); color: #2a0610; border-color: var(--danger); font-weight: 600; }
+.btn.ghost { background: none; }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.toolbar input[type="search"] { flex: 1 1 220px; }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px; margin-bottom: 14px; }
+.panel h2 { margin: 0 0 10px; font-size: 14px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+.field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.field label { font-size: 12px; color: var(--muted); }
+.field.wide { grid-column: 1 / -1; }
+.check { display: flex; align-items: center; gap: 8px; }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; align-items: center; }
+.count { color: var(--muted); font-size: 13px; }
+ul.list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.row { display: flex; align-items: center; gap: 12px; padding: 8px 12px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; min-width: 0; }
+.row.sel { border-color: var(--accent); background: var(--panel-2); }
+.row.off { opacity: .55; }
+.row .who { flex: 1; min-width: 0; }
+.row .name { font-weight: 600; overflow-wrap: anywhere; }
+.row .sub { color: var(--muted); font-size: 13px; overflow-wrap: anywhere; }
+.avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--panel-2); flex: none; object-fit: cover; }
+.tag { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); margin-left: 6px; vertical-align: middle; }
+.tag.akuma { color: var(--accent); border-color: var(--accent); }
+.group { margin: 18px 0 6px; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.logline { display: flex; gap: 10px; padding: 8px 12px; border-bottom: 1px solid var(--line); font-size: 14px; }
+.logline time { color: var(--muted); flex: none; font-variant-numeric: tabular-nums; }
+.logline.bad { color: #ffb3c1; }
+.empty { color: var(--muted); padding: 20px 4px; }
+dialog { background: var(--panel); color: var(--fg); border: 1px solid var(--line); border-radius: 14px; padding: 18px; width: min(440px, calc(100vw - 32px)); }
+dialog::backdrop { background: rgba(5, 3, 10, .7); }
+dialog h3 { margin: 0 0 8px; }
+dialog p { color: var(--muted); margin: 0 0 12px; overflow-wrap: anywhere; }
+dialog input { width: 100%; }
+#toast { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); background: var(--panel-2); border: 1px solid var(--accent); padding: 10px 16px; border-radius: 10px; max-width: calc(100vw - 32px); opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 5; }
+#toast.show { opacity: 1; }
+body { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-top: env(safe-area-inset-top, 0px); padding-bottom: max(80px, env(safe-area-inset-bottom, 0px)); }
+input, select, textarea { font-size: 16px; }
+.btn { min-height: 44px; }
+.row input[type="checkbox"] { width: 22px; height: 22px; flex: none; }
+nav button { flex: 1; min-height: 44px; }
+.hint { color: var(--muted); font-size: 13px; min-height: 18px; overflow-wrap: anywhere; }
+.login p { color: var(--muted); margin: 0 0 12px; }
+.login ol { color: var(--muted); padding-left: 20px; margin: 0 0 14px; }
+.login li { margin-bottom: 6px; }
+.login .field { margin-bottom: 12px; }
+.login input { width: 100%; }
+.login .banner { margin-bottom: 12px; }
+@media (max-width: 520px) { .row { flex-wrap: wrap; } .row .btn { width: 100%; } }
+@media (prefers-reduced-motion: reduce) { #toast { transition: none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1><span>🦋</span> Panneau Akuma</h1>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><div id="status" class="pill"><span class="dot"></span><span id="status-text">Connexion…</span></div><button class="btn ghost" id="btn-logout" hidden>Se déconnecter</button></div>
+  </header>
+
+  <section id="login" class="panel login" hidden>
+    <h2>Connexion au bot</h2>
+    <p>Le token reste sur ton téléphone. Il est envoyé à Discord uniquement via ton propre relais.</p>
+    <ol>
+      <li>Sur discord.com/developers/applications, crée une application puis un <b>Bot</b>. Copie son <b>token</b> et active <b>Server Members Intent</b>.</li>
+      <li>Invite le bot avec les permissions : gérer les rôles, gérer les pseudos, gérer les salons, voir les salons, envoyer des messages, intégrer des liens, exclure temporairement des membres, déplacer des membres.</li>
+      <li>Dans les rôles du serveur, place le rôle du bot <b>au-dessus</b> de tes membres.</li>
+      <li>Active le mode développeur de Discord, puis appuie longuement sur ton serveur : <b>Copier l'identifiant</b>.</li>
+    </ol>
+    <div id="login-err" class="banner" hidden></div>
+    <form id="login-form" autocomplete="off">
+      <div class="field"><label for="l-relay">Adresse du relais</label><input id="l-relay" type="url" required placeholder="https://ton-service.onrender.com" autocomplete="off" autocapitalize="off" spellcheck="false"></div>
+      <div class="field"><label for="l-token">Token du bot</label><input id="l-token" type="password" required autocomplete="off" autocapitalize="off" spellcheck="false"></div>
+      <div class="field"><label for="l-guild">Identifiant du serveur</label><input id="l-guild" inputmode="numeric" pattern="[0-9]{15,25}" required autocomplete="off"></div>
+      <div class="field"><label for="l-role">Nom du rôle des akumatisés</label><input id="l-role" value="Akumatisé" autocomplete="off"></div>
+      <button class="btn primary" id="l-go" type="submit">Se connecter</button>
+    </form>
+  </section>
+
+  <div id="app" hidden>
+
+  <nav role="tablist">
+    <button role="tab" id="tab-members" aria-selected="true">Membres</button>
+    <button role="tab" id="tab-channels" aria-selected="false">Salons</button>
+    <button role="tab" id="tab-log" aria-selected="false">Journal</button>
+  </nav>
+
+  <section id="view-members">
+    <div class="toolbar">
+      <input type="search" id="member-search" placeholder="Chercher un membre…" aria-label="Chercher un membre">
+      <button class="btn" id="btn-random">Tirer au sort</button>
+      <button class="btn ghost" id="btn-clear">Tout désélectionner</button>
+      <button class="btn ghost" id="btn-reload-members">Actualiser</button>
+    </div>
+
+    <div class="panel">
+      <h2>Akumatisation</h2>
+      <div class="grid">
+        <div class="field"><label for="f-emotion">Émotion</label>
+          <input id="f-emotion" list="emotions" placeholder="Colère, jalousie…">
+          <datalist id="emotions"><option>Colère</option><option>Jalousie</option><option>Tristesse</option><option>Orgueil</option><option>Peur</option><option>Solitude</option><option>Culpabilité</option><option>Ennui</option></datalist>
+        </div>
+        <div class="field"><label for="f-power">Pouvoir transmis</label>
+          <select id="f-power"><option value="">Aucun pouvoir</option></select>
+          <div class="hint" id="power-desc"></div>
+        </div>
+        <div class="field"><label for="f-duration">Durée en minutes (0 = jusqu'à la purification)</label>
+          <input id="f-duration" type="number" min="0" max="10080" value="0">
+        </div>
+        <div class="field"><label for="f-channel">Annoncer dans le salon</label>
+          <select id="f-channel"><option value="">Aucune annonce</option></select>
+        </div>
+        <div class="field wide check">
+          <input id="f-nick" type="checkbox"> <label for="f-nick" style="font-size:14px;color:var(--fg)">Changer le pseudo :</label>
+          <input id="f-nickfmt" value="🦋 {name}" aria-label="Format du pseudo" style="flex:1">
+        </div>
+        <div class="field wide"><label for="f-message">Message d'annonce (facultatif). Variables : {user} {name} {emotion} {power}</label>
+          <textarea id="f-message" rows="2" placeholder="🦋 {user} a été touché par une émotion négative ({emotion}). Pouvoir reçu : {power}."></textarea>
+        </div>
+        <div class="field wide"><label for="f-dm">Message privé à l'akumatisé (facultatif). Variables : {name} {emotion} {power}</label>
+          <textarea id="f-dm" rows="3" placeholder="Écris ce que tu veux : le bot l'envoie en message privé, avec le pouvoir et la commande /pouvoir."></textarea>
+          <div class="hint">Le membre doit accepter les messages privés des membres du serveur, sinon il ne recevra rien.</div>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn primary" id="btn-akuma" disabled>Akumatiser</button>
+        <button class="btn" id="btn-purify" disabled>Purifier</button>
+        <span class="count" id="sel-count">Aucun membre sélectionné</span>
+      </div>
+    </div>
+
+    <ul class="list" id="members"></ul>
+  </section>
+
+  <section id="view-channels" hidden>
+    <div class="toolbar">
+      <input type="search" id="channel-search" placeholder="Chercher un salon…" aria-label="Chercher un salon">
+      <button class="btn ghost" id="btn-reload-channels">Actualiser</button>
+    </div>
+    <div id="channels"></div>
+  </section>
+
+  <section id="view-log" hidden>
+    <div class="toolbar"><button class="btn ghost" id="btn-reload-log">Actualiser</button></div>
+    <div id="logs" class="panel" style="padding:0"></div>
+  </section>
+  </div>
+</div>
+
+<dialog id="dlg">
+  <h3>Supprimer ce salon ?</h3>
+  <p id="dlg-text"></p>
+  <input id="dlg-input" autocomplete="off" aria-label="Nom du salon pour confirmer">
+  <div class="actions">
+    <button class="btn danger" id="dlg-ok" disabled>Supprimer définitivement</button>
+    <button class="btn ghost" id="dlg-cancel">Annuler</button>
+  </div>
+</dialog>
+<div id="toast" role="status"></div>
+
+<script>
+(() => {
+  // ===================================================== DISCORD (aucun accès au DOM ici)
+  const STORE = 'akuma.phone.v1';
+  const MAX_DURATION_MIN = 7 * 24 * 60;
+  const TYPE_LABELS = { 0: 'texte', 2: 'vocal', 4: 'catégorie', 5: 'annonces', 13: 'scène', 15: 'forum', 16: 'média' };
+  const POWERS = [
+    { key: 'marionnettiste', label: 'Marionnettiste', emoji: '🎭', usage: '/pouvoir cible texte', desc: 'Fait parler un joueur à ta place pendant qu’il est réduit au silence (1 min).' },
+    { key: 'dark-cupid', label: 'Dark Cupid', emoji: '💘', usage: '/pouvoir cible', desc: 'Rend un joueur fan de toi : son pseudo change pendant 5 min.' },
+    { key: 'sandboy', label: 'Sandboy', emoji: '😴', usage: '/pouvoir cible', desc: 'Endort un joueur : il ne peut ni écrire ni parler pendant 2 min.' },
+    { key: 'pixelator', label: 'Pixelator', emoji: '🟪', usage: '/pouvoir cible', desc: 'Transforme un joueur en pixels : pseudo changé et figé 1 min.' },
+    { key: 'timebreaker', label: 'Timebreaker', emoji: '⏳', usage: '/pouvoir', desc: 'Fige le temps : le salon est verrouillé 20 s pour tous, sauf pour toi.' },
+    { key: 'reflekta', label: 'Reflekta', emoji: '🪞', usage: '/pouvoir cible', desc: 'Piège un joueur (en vocal) dans le salon vocal « Miroir ».' },
+    { key: 'gamer', label: 'Gamer', emoji: '🎮', usage: '/pouvoir cible', desc: 'Lance un défi : la cible doit appuyer sur START en 15 s, sinon elle est figée 2 min.' },
+    { key: 'evillustrator', label: 'Evillustrator', emoji: '✏️', usage: '/pouvoir texte', desc: 'Dessine un objet ou un obstacle qui devient réel dans le salon.' },
+    { key: 'stoneheart', label: 'Stoneheart', emoji: '🪨', usage: '/pouvoir', desc: 'Corps de pierre : les pouvoirs des autres n’ont plus d’effet sur toi pendant 5 min.' },
+    { key: 'animan', label: 'Animan', emoji: '🐾', usage: '/pouvoir cible', desc: 'Transforme un joueur en animal : pseudo changé pendant 5 min.' },
+    { key: 'lady-wifi', label: 'Lady Wifi', emoji: '📡', usage: '/pouvoir cible texte', desc: 'Envoie un message privé à un joueur de ton choix.' },
+    { key: 'guitar-villain', label: 'Guitar Villain', emoji: '🎸', usage: '/pouvoir cible', desc: 'Une onde sonore éjecte un joueur de son salon vocal.' },
+  ];
+  const powerByKey = (k) => POWERS.find((p) => p.key === k) || null;
+
+  const relayBase = () => String(saved.relay || '').trim().replace(/\/+$/, '');
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+  let saved = { relay: '', token: '', guildId: '', roleName: 'Akumatisé', akuma: {}, logs: [] };
+  try {
+    const raw = JSON.parse(localStorage.getItem(STORE) || 'null');
+    if (raw && typeof raw === 'object') saved = Object.assign(saved, raw);
+  } catch (_) { /* stockage indisponible : on travaille en mémoire */ }
+  if (!saved.akuma || typeof saved.akuma !== 'object') saved.akuma = {};
+  if (!Array.isArray(saved.logs)) saved.logs = [];
+
+  function persist() {
+    try { localStorage.setItem(STORE, JSON.stringify(saved)); } catch (_) { /* ignore */ }
+  }
+  function log(text, ok = true) {
+    saved.logs.unshift({ t: Date.now(), text, ok });
+    saved.logs = saved.logs.slice(0, 100);
+    persist();
+  }
+
+  function dcError(status, j) {
+    const code = j && j.code;
+    let message;
+    if (status === 401) message = 'Token invalide : regénère-le dans le portail développeur Discord.';
+    else if (code === 50013) message = 'Permission refusée : le rôle du bot doit être au-dessus du membre ou du rôle concerné (Paramètres du serveur > Rôles).';
+    else if (code === 10007 || code === 10013) message = 'Membre introuvable (il a peut-être quitté le serveur).';
+    else if (code === 50007) message = 'Message privé impossible : le membre bloque les messages privés des membres du serveur.';
+    else if (code === 10003) message = 'Salon introuvable.';
+    else if (code === 10004) message = 'Serveur introuvable : vérifie l’identifiant du serveur.';
+    else if (code === 50001 || status === 403) message = 'Accès refusé : le bot est-il invité sur ce serveur, avec « Server Members Intent » activé ?';
+    else message = (j && j.message) || 'Erreur Discord ' + status;
+    return Object.assign(new Error(message), { status, code });
+  }
+
+  async function dc(method, path, body) {
+    const headers = { Authorization: 'Bot ' + saved.token };
+    if (body !== undefined) headers['Content-Type'] = 'application/json';
+    for (let attempt = 0; attempt < 4; attempt++) {
+      let res;
+      try {
+        res = await fetch(relayBase() + '/api/v10' + path, { method, headers, body: body !== undefined ? JSON.stringify(body) : undefined });
+      } catch (_) {
+        throw new Error('Impossible de joindre le relais : vérifie son adresse dans l’écran de connexion et ta connexion.');
+      }
+      if (res.status === 429) {
+        const j = await res.json().catch(() => ({}));
+        await sleep(((j && j.retry_after) || 1) * 1000 + 150);
+        continue;
+      }
+      if (res.status === 204) return null;
+      const j = await res.json().catch(() => null);
+      if (!res.ok) throw dcError(res.status, j);
+      return j;
+    }
+    throw new Error('Discord demande de ralentir : réessaie dans un instant.');
+  }
+
+  let ctx = null;
+  async function loadCtx() {
+    if (!relayBase()) throw new Error('Renseigne l’adresse de ton relais.');
+    if (!saved.token || !saved.guildId) throw new Error('Renseigne le token et l’identifiant du serveur.');
+    const me = await dc('GET', '/users/@me');
+    const guild = await dc('GET', '/guilds/' + saved.guildId);
+    const roles = await dc('GET', '/guilds/' + saved.guildId + '/roles');
+    const botMember = await dc('GET', '/guilds/' + saved.guildId + '/members/' + me.id);
+    const roleMap = new Map(roles.map((r) => [r.id, r]));
+    const top = (ids) => Math.max(0, ...ids.map((id) => (roleMap.get(id) ? roleMap.get(id).position : 0)));
+    ctx = { me, guild, roles, roleMap, top, botTop: top(botMember.roles) };
+    return ctx;
+  }
+
+  const dispName = (m) => m.nick || m.user.global_name || m.user.username;
+  const manageable = (m) => m.user.id !== ctx.guild.owner_id && m.user.id !== ctx.me.id && ctx.top(m.roles) < ctx.botTop;
+
+  function avatarUrl(user) {
+    if (user.avatar) return `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=64`;
+    let idx = 0;
+    try { idx = Number((BigInt(user.id) >> 22n) % 6n); } catch (_) { /* ignore */ }
+    return `https://cdn.discordapp.com/embed/avatars/${idx}.png`;
+  }
+
+  function fill(template, vars) {
+    return String(template).replace(/\{(user|name|emotion|power)\}/g, (_, k) => (vars[k] == null ? '' : vars[k]));
+  }
+
+  async function ensureRole() {
+    await loadCtx();
+    const name = saved.roleName || 'Akumatisé';
+    let role = ctx.roles.find((r) => r.name === name);
+    if (!role) {
+      role = await dc('POST', `/guilds/${saved.guildId}/roles`, { name, color: 0x7b2cbf });
+      ctx.roles.push(role);
+      ctx.roleMap.set(role.id, role);
+      log(`Rôle « ${name} » créé.`);
+    }
+    if (role.position >= ctx.botTop) {
+      throw new Error(`Le rôle « ${name} » doit être sous le rôle du bot (Paramètres du serveur > Rôles : glisse le rôle du bot au-dessus).`);
+    }
+    return role;
+  }
+
+  async function sendDM(id, entry, text, power) {
+    const ch = await dc('POST', '/users/@me/channels', { recipient_id: id });
+    const fallback = power
+      ? '🦋 Tu as été touché par une émotion négative ({emotion}). Papillon Ombre te donne un pouvoir : {power}.'
+      : '🦋 Tu as été touché par une émotion négative ({emotion}).';
+    const description = fill(text || fallback, { user: `<@${id}>`, name: entry.name, emotion: entry.emotion || '…', power: entry.power || '…' }).slice(0, 3500);
+    const embed = { title: '🦋 Message de Papillon Ombre', description, color: 0x7b2cbf };
+    if (power) {
+      embed.fields = [{ name: `${power.emoji} ${power.label}`, value: `${power.desc}\nCommande : **${power.usage}**` }];
+      embed.footer = { text: `Pouvoir : ${power.label} · /pouvoir` };
+    }
+    await dc('POST', `/channels/${ch.id}/messages`, { embeds: [embed] });
+  }
+
+  async function akumatizeOne(role, id, o) {
+    const g = saved.guildId;
+    if (id === ctx.me.id) throw new Error('Impossible de cibler le bot lui-même.');
+    if (saved.akuma[id]) throw new Error('Déjà akumatisé.');
+    const m = await dc('GET', `/guilds/${g}/members/${id}`);
+    if (!manageable(m)) throw new Error('Modification impossible (propriétaire du serveur ou rôle plus haut que celui du bot).');
+    const name = dispName(m);
+    const entry = {
+      name,
+      originalNick: m.nick || null,
+      emotion: o.emotion,
+      power: o.power,
+      powerKey: o.powerKey || '',
+      since: Date.now(),
+      endsAt: o.durationMin > 0 ? Date.now() + o.durationMin * 60000 : null,
+    };
+    await dc('PUT', `/guilds/${g}/members/${id}/roles/${role.id}`);
+    if (o.changeNick) {
+      try {
+        await dc('PATCH', `/guilds/${g}/members/${id}`, { nick: fill(o.nickFormat || '🦋 {name}', { name }).slice(0, 32) });
+      } catch (e) {
+        log(`Pseudo non modifié pour ${name} : ${e.message}`, false);
+      }
+    }
+    saved.akuma[id] = entry;
+    persist();
+    if (o.announceChannelId) {
+      try {
+        const template = o.message || '🦋 {user} a été touché par une émotion négative ({emotion}). Pouvoir reçu : {power}.';
+        const content = fill(template, { user: `<@${id}>`, name, emotion: entry.emotion || '…', power: entry.power || '…' }).slice(0, 1900);
+        await dc('POST', `/channels/${o.announceChannelId}/messages`, { content, allowed_mentions: { users: [id] } });
+      } catch (e) {
+        log(`Annonce non envoyée : ${e.message}`, false);
+      }
+    }
+    let dmError = null;
+    const power = powerByKey(o.powerKey);
+    if (o.dm || power) {
+      try {
+        await sendDM(id, entry, o.dm, power);
+      } catch (e) {
+        dmError = e.message;
+        log(`Message privé non envoyé à ${name} : ${e.message}`, false);
+      }
+    }
+    log(`${name} akumatisé (${entry.emotion || '—'} / ${entry.power || '—'}).`);
+    return { dmError };
+  }
+
+  async function purifyOne(id, why = 'purification') {
+    const g = saved.guildId;
+    const entry = saved.akuma[id];
+    let name = entry ? entry.name : id;
+    let m = null;
+    try {
+      m = await dc('GET', `/guilds/${g}/members/${id}`);
+    } catch (e) {
+      if (e.code !== 10007 && e.code !== 10013) throw e;
+    }
+    if (m) {
+      name = dispName(m);
+      const role = ctx.roles.find((r) => r.name === (saved.roleName || 'Akumatisé'));
+      if (role && m.roles.includes(role.id)) await dc('DELETE', `/guilds/${g}/members/${id}/roles/${role.id}`);
+      if (entry && manageable(m) && (m.nick || null) !== (entry.originalNick || null)) {
+        try {
+          await dc('PATCH', `/guilds/${g}/members/${id}`, { nick: entry.originalNick || null });
+        } catch (e) {
+          log(`Pseudo non restauré pour ${name} : ${e.message}`, false);
+        }
+      }
+    }
+    delete saved.akuma[id];
+    persist();
+    log(`${name} purifié (${why}).`);
+  }
+
+  async function sweep() {
+    if (!ctx) return;
+    const due = Object.keys(saved.akuma).filter((id) => saved.akuma[id].endsAt && saved.akuma[id].endsAt <= Date.now());
+    for (const id of due) {
+      try { await purifyOne(id, 'fin de la durée'); } catch (e) { log(`Purification automatique impossible : ${e.message}`, false); }
+    }
+    return due.length;
+  }
+
+  async function api(path, body) {
+    if (path === '/api/log') return { logs: saved.logs };
+
+    if (path === '/api/members') {
+      await loadCtx();
+      let all = [];
+      let after = '0';
+      for (;;) {
+        const page = await dc('GET', `/guilds/${saved.guildId}/members?limit=1000&after=${after}`);
+        all = all.concat(page);
+        if (page.length < 1000) break;
+        after = page[page.length - 1].user.id;
+      }
+      const members = all.map((m) => ({
+        id: m.user.id,
+        username: m.user.username,
+        displayName: dispName(m),
+        avatar: avatarUrl(m.user),
+        bot: !!m.user.bot,
+        manageable: manageable(m),
+        akuma: saved.akuma[m.user.id] || null,
+      }));
+      members.sort((a, b) => a.displayName.localeCompare(b.displayName, 'fr', { sensitivity: 'base' }));
+      return { members };
+    }
+
+    if (path === '/api/channels') {
+      const list = await dc('GET', `/guilds/${saved.guildId}/channels`);
+      const cats = new Map(list.filter((c) => c.type === 4).map((c) => [c.id, c]));
+      const channels = list.map((c) => ({
+        id: c.id,
+        name: c.name,
+        type: TYPE_LABELS[c.type] || 'autre',
+        parent: c.parent_id && cats.get(c.parent_id) ? cats.get(c.parent_id).name : null,
+        parentPosition: c.parent_id && cats.get(c.parent_id) ? cats.get(c.parent_id).position : -1,
+        position: c.position || 0,
+        isCategory: c.type === 4,
+        canPost: c.type === 0 || c.type === 5,
+        deletable: true,
+      }));
+      return { channels };
+    }
+
+    if (path === '/api/akumatize') {
+      const ids = Array.isArray(body.ids) ? body.ids.map(String).slice(0, 100) : [];
+      if (!ids.length) throw new Error('Choisis au moins un membre.');
+      const role = await ensureRole();
+      const options = {
+        emotion: String(body.emotion || '').slice(0, 60),
+        powerKey: powerByKey(String(body.powerKey || '')) ? String(body.powerKey) : '',
+        power: powerByKey(String(body.powerKey || '')) ? powerByKey(String(body.powerKey || '')).label : '',
+        dm: String(body.dm || '').slice(0, 3500),
+        durationMin: Math.max(0, Math.min(MAX_DURATION_MIN, Number(body.durationMin) || 0)),
+        changeNick: !!body.changeNick,
+        nickFormat: String(body.nickFormat || '').slice(0, 60),
+        announceChannelId: body.announceChannelId ? String(body.announceChannelId) : '',
+        message: String(body.message || '').slice(0, 1500),
+      };
+      const results = [];
+      for (const id of ids) {
+        try {
+          const { dmError } = await akumatizeOne(role, id, options);
+          results.push({ id, ok: true, dmError });
+        } catch (e) {
+          log(`Akumatisation de ${id} impossible : ${e.message}`, false);
+          results.push({ id, ok: false, error: e.message });
+        }
+      }
+      return { results };
+    }
+
+    if (path === '/api/purify') {
+      const ids = Array.isArray(body.ids) ? body.ids.map(String).slice(0, 100) : [];
+      if (!ids.length) throw new Error('Choisis au moins un membre.');
+      await loadCtx();
+      const results = [];
+      for (const id of ids) {
+        try {
+          await purifyOne(id);
+          results.push({ id, ok: true });
+        } catch (e) {
+          log(`Purification de ${id} impossible : ${e.message}`, false);
+          results.push({ id, ok: false, error: e.message });
+        }
+      }
+      return { results };
+    }
+
+    if (path === '/api/channels/delete') {
+      const channel = await dc('GET', `/channels/${String(body.id || '')}`);
+      if (String(body.confirmName || '') !== channel.name) throw new Error('Le nom saisi ne correspond pas : suppression annulée.');
+      await dc('DELETE', `/channels/${channel.id}`);
+      log(`Salon « ${channel.name} » supprimé.`);
+      return { ok: true };
+    }
+
+    throw new Error('Action inconnue.');
+  }
+
+  const bridge = { saved: () => saved, persist, loadCtx, sweep, api, ctx: () => ctx, log };
+  if (typeof document === 'undefined') { module.exports = bridge; return; }
+
+  // ===================================================== INTERFACE
+  const $ = (id) => document.getElementById(id);
+  const state = { members: [], channels: [], selected: new Set(), connected: false };
+
+  function h(tag, props, ...kids) {
+    const el = document.createElement(tag);
+    for (const [k, v] of Object.entries(props || {})) {
+      if (k === 'class') el.className = v;
+      else if (k === 'value') el.value = v;
+      else if (k === 'checked') el.checked = !!v;
+      else if (k.startsWith('on')) el.addEventListener(k.slice(2), v);
+      else if (v === true) el.setAttribute(k, '');
+      else if (v !== false && v != null) el.setAttribute(k, v);
+    }
+    for (const kid of kids.flat()) {
+      if (kid == null || kid === false) continue;
+      el.append(kid.nodeType ? kid : document.createTextNode(String(kid)));
+    }
+    return el;
+  }
+
+  let toastTimer;
+  function toast(text) {
+    const t = $('toast');
+    t.textContent = text;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 3800);
+  }
+
+  function remaining(ms) {
+    const min = Math.ceil(Math.max(0, ms - Date.now()) / 60000);
+    if (min >= 1440) return Math.round(min / 1440) + ' j';
+    if (min >= 60) return Math.floor(min / 60) + ' h ' + String(min % 60).padStart(2, '0');
+    return min + ' min';
+  }
+
+  // ---- onglets
+  const tabs = { members: 'view-members', channels: 'view-channels', log: 'view-log' };
+  function showTab(name) {
+    for (const [key, view] of Object.entries(tabs)) {
+      $(view).hidden = key !== name;
+      $('tab-' + key).setAttribute('aria-selected', String(key === name));
+    }
+    if (!state.connected) return;
+    if (name === 'channels') loadChannels();
+    if (name === 'log') loadLog();
+  }
+  for (const key of Object.keys(tabs)) $('tab-' + key).addEventListener('click', () => showTab(key));
+
+  // ---- connexion
+  function setStatus(ok, text) {
+    $('status').className = 'pill ' + (ok ? 'ok' : 'bad');
+    $('status-text').textContent = text;
+    $('btn-logout').hidden = !saved.token;
+  }
+
+  function showLogin(message) {
+    state.connected = false;
+    $('app').hidden = true;
+    $('login').hidden = false;
+    $('l-relay').value = saved.relay || '';
+    $('l-token').value = saved.token || '';
+    $('l-guild').value = saved.guildId || '';
+    $('l-role').value = saved.roleName || 'Akumatisé';
+    const err = $('login-err');
+    err.hidden = !message;
+    err.textContent = message || '';
+  }
+
+  async function connect() {
+    try {
+      await loadCtx();
+      state.connected = true;
+      setStatus(true, ctx_name());
+      $('login').hidden = true;
+      $('app').hidden = false;
+      return true;
+    } catch (e) {
+      setStatus(false, 'Hors ligne');
+      showLogin(e.message);
+      return false;
+    }
+  }
+  const ctx_name = () => bridge.ctx().guild.name + ' · ' + bridge.ctx().me.username;
+
+  $('login-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    saved.relay = $('l-relay').value.trim();
+    saved.token = $('l-token').value.trim().replace(/^Bot\s+/i, '');
+    saved.guildId = $('l-guild').value.trim();
+    saved.roleName = $('l-role').value.trim() || 'Akumatisé';
+    persist();
+    $('l-go').disabled = true;
+    const ok = await connect();
+    $('l-go').disabled = false;
+    if (ok) { await sweep(); loadMembers(); loadChannels(); }
+  });
+
+  $('btn-logout').addEventListener('click', () => {
+    saved.token = '';
+    persist();
+    setStatus(false, 'Déconnecté');
+    showLogin('');
+  });
+
+  // ---- membres
+  async function loadMembers() {
+    try {
+      const { members } = await api('/api/members');
+      state.members = members;
+      for (const id of [...state.selected]) if (!members.some((m) => m.id === id)) state.selected.delete(id);
+      renderMembers();
+    } catch (e) {
+      toast(e.message);
+    }
+  }
+
+  function renderMembers() {
+    const q = $('member-search').value.trim().toLowerCase();
+    const list = state.members.filter((m) => !q || m.displayName.toLowerCase().includes(q) || m.username.toLowerCase().includes(q));
+    const ul = $('members');
+    ul.replaceChildren();
+    if (!list.length) ul.append(h('li', { class: 'empty' }, state.members.length ? 'Aucun membre ne correspond.' : 'Aucun membre chargé.'));
+    for (const m of list) {
+      const selected = state.selected.has(m.id);
+      const sub = ['@' + m.username];
+      if (m.akuma) sub.push((m.akuma.emotion || 'émotion ?') + ' · ' + (m.akuma.power || 'pouvoir ?') + (m.akuma.endsAt ? ' · reste ' + remaining(m.akuma.endsAt) : ''));
+      ul.append(h('li', { class: 'row' + (selected ? ' sel' : '') + (!m.manageable ? ' off' : '') },
+        h('input', {
+          type: 'checkbox', checked: selected, disabled: !m.manageable, 'aria-label': 'Sélectionner ' + m.displayName,
+          onchange: (e) => { e.target.checked ? state.selected.add(m.id) : state.selected.delete(m.id); renderMembers(); },
+        }),
+        h('img', { class: 'avatar', src: m.avatar, alt: '', referrerpolicy: 'no-referrer', loading: 'lazy' }),
+        h('div', { class: 'who' },
+          h('div', { class: 'name' }, m.displayName,
+            m.bot ? h('span', { class: 'tag' }, 'bot') : null,
+            m.akuma ? h('span', { class: 'tag akuma' }, 'akumatisé') : null,
+            !m.manageable ? h('span', { class: 'tag' }, 'non modifiable') : null),
+          h('div', { class: 'sub' }, sub.join(' — '))),
+        m.akuma ? h('button', { class: 'btn', onclick: () => purify([m.id]) }, 'Purifier') : null));
+    }
+    const n = state.selected.size;
+    $('sel-count').textContent = n ? n + ' membre' + (n > 1 ? 's' : '') + ' sélectionné' + (n > 1 ? 's' : '') : 'Aucun membre sélectionné';
+    $('btn-akuma').disabled = !n;
+    $('btn-purify').disabled = !n;
+  }
+
+  function summarize(results, verb) {
+    const ok = results.filter((r) => r.ok).length;
+    const bad = results.filter((r) => !r.ok);
+    const dmBad = results.filter((r) => r.ok && r.dmError).length;
+    toast(ok + ' ' + verb + (bad.length ? ' · ' + bad.length + ' échec(s) : ' + bad[0].error : '') + (dmBad ? ' · message privé non envoyé à ' + dmBad : ''));
+  }
+
+  async function akumatize() {
+    const ids = [...state.selected];
+    if (!ids.length) return;
+    $('btn-akuma').disabled = true;
+    toast('Akumatisation en cours…');
+    try {
+      const { results } = await api('/api/akumatize', {
+        ids,
+        emotion: $('f-emotion').value.trim(),
+        powerKey: $('f-power').value,
+        dm: $('f-dm').value.trim(),
+        durationMin: Number($('f-duration').value) || 0,
+        changeNick: $('f-nick').checked,
+        nickFormat: $('f-nickfmt').value,
+        announceChannelId: $('f-channel').value,
+        message: $('f-message').value.trim(),
+      });
+      summarize(results, 'akumatisé(s)');
+      for (const r of results) if (r.ok) state.selected.delete(r.id);
+    } catch (e) {
+      toast(e.message);
+    }
+    await loadMembers();
+  }
+
+  async function purify(ids) {
+    toast('Purification en cours…');
+    try {
+      const { results } = await api('/api/purify', { ids });
+      summarize(results, 'purifié(s)');
+      for (const r of results) if (r.ok) state.selected.delete(r.id);
+    } catch (e) {
+      toast(e.message);
+    }
+    await loadMembers();
+  }
+
+  $('btn-akuma').addEventListener('click', akumatize);
+  $('btn-purify').addEventListener('click', () => purify([...state.selected]));
+  $('btn-clear').addEventListener('click', () => { state.selected.clear(); renderMembers(); });
+  $('btn-reload-members').addEventListener('click', loadMembers);
+  $('member-search').addEventListener('input', renderMembers);
+  $('btn-random').addEventListener('click', () => {
+    const pool = state.members.filter((m) => !m.bot && m.manageable && !m.akuma);
+    if (!pool.length) return toast('Personne à tirer au sort.');
+    const pick = pool[Math.floor(Math.random() * pool.length)];
+    state.selected = new Set([pick.id]);
+    $('member-search').value = '';
+    renderMembers();
+    toast('Tiré au sort : ' + pick.displayName);
+  });
+
+  // ---- pouvoirs
+  (function initPowers() {
+    const sel = $('f-power');
+    for (const p of POWERS) sel.append(h('option', { value: p.key }, p.emoji + ' ' + p.label));
+    sel.addEventListener('change', () => {
+      const p = powerByKey(sel.value);
+      $('power-desc').textContent = p ? p.desc + ' Commande : ' + p.usage : '';
+    });
+  })();
+
+  // ---- salons
+  async function loadChannels() {
+    try {
+      const { channels } = await api('/api/channels');
+      state.channels = channels;
+      renderChannels();
+      const sel = $('f-channel');
+      const current = sel.value;
+      sel.replaceChildren(h('option', { value: '' }, 'Aucune annonce'));
+      for (const c of channels.filter((c) => c.canPost).sort((a, b) => a.name.localeCompare(b.name))) {
+        sel.append(h('option', { value: c.id }, '#' + c.name));
+      }
+      sel.value = current;
+    } catch (e) {
+      toast(e.message);
+    }
+  }
+
+  function renderChannels() {
+    const q = $('channel-search').value.trim().toLowerCase();
+    const box = $('channels');
+    box.replaceChildren();
+    const list = state.channels.filter((c) => !q || c.name.toLowerCase().includes(q));
+    if (!list.length) return box.append(h('div', { class: 'empty' }, 'Aucun salon.'));
+    const groups = new Map();
+    for (const c of list) {
+      const key = c.isCategory ? c.id : (c.parent || '');
+      if (!groups.has(key)) groups.set(key, { title: c.isCategory ? c.name : (c.parent || 'Sans catégorie'), order: c.isCategory ? c.position : c.parentPosition, items: [] });
+      const g = groups.get(key);
+      if (c.isCategory) { g.title = c.name; g.order = c.position; }
+      g.items.push(c);
+    }
+    for (const g of [...groups.values()].sort((a, b) => a.order - b.order)) {
+      box.append(h('div', { class: 'group' }, g.title));
+      const ul = h('ul', { class: 'list' });
+      for (const c of g.items.sort((a, b) => a.position - b.position)) {
+        ul.append(h('li', { class: 'row' },
+          h('div', { class: 'who' },
+            h('div', { class: 'name' }, (c.type === 'vocal' ? '🔊 ' : c.isCategory ? '' : '# ') + c.name),
+            h('div', { class: 'sub' }, c.type)),
+          h('button', { class: 'btn danger', onclick: () => askDelete(c) }, 'Supprimer')));
+      }
+      box.append(ul);
+    }
+  }
+  $('channel-search').addEventListener('input', renderChannels);
+  $('btn-reload-channels').addEventListener('click', loadChannels);
+
+  // ---- confirmation de suppression
+  let pending = null;
+  function askDelete(c) {
+    pending = c;
+    $('dlg-text').textContent = 'Pour supprimer « ' + c.name + ' » (' + c.type + '), recopie son nom exact. Cette action est définitive.';
+    $('dlg-input').value = '';
+    $('dlg-ok').disabled = true;
+    $('dlg').showModal();
+  }
+  $('dlg-input').addEventListener('input', () => { $('dlg-ok').disabled = !pending || $('dlg-input').value !== pending.name; });
+  $('dlg-cancel').addEventListener('click', () => { pending = null; $('dlg').close(); });
+  $('dlg-ok').addEventListener('click', async () => {
+    if (!pending) return;
+    const c = pending;
+    $('dlg-ok').disabled = true;
+    try {
+      await api('/api/channels/delete', { id: c.id, confirmName: $('dlg-input').value });
+      toast('Salon « ' + c.name + ' » supprimé.');
+    } catch (e) {
+      toast(e.message);
+    }
+    pending = null;
+    $('dlg').close();
+    loadChannels();
+  });
+
+  // ---- journal
+  async function loadLog() {
+    const { logs } = await api('/api/log');
+    const box = $('logs');
+    box.replaceChildren();
+    if (!logs.length) return box.append(h('div', { class: 'empty', style: 'padding:16px' }, 'Rien pour l’instant.'));
+    for (const l of logs) {
+      const time = new Date(l.t).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      box.append(h('div', { class: 'logline' + (l.ok ? '' : ' bad') }, h('time', null, time), h('span', null, l.text)));
+    }
+  }
+  $('btn-reload-log').addEventListener('click', loadLog);
+
+  // ---- démarrage
+  async function boot() {
+    if (!relayBase() || !saved.token || !saved.guildId) return showLogin('');
+    if (await connect()) {
+      await sweep();
+      loadMembers();
+      loadChannels();
+    }
+  }
+  boot();
+  setInterval(async () => {
+    if (!state.connected) return;
+    const n = await sweep();
+    if (n) { toast(n + ' membre(s) purifié(s) automatiquement.'); loadMembers(); } else renderMembers();
+  }, 30000);
+})();
+
+</script>
+</body>
+</html>
