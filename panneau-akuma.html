@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Papillon Ombre — Centre de contrôle</title>
+<style>
+:root {
+  color-scheme: dark;
+  --bg:#100d1b;
+  --panel:#211a32;
+  --line:#49365f;
+  --text:#f4efff;
+  --muted:#b5a8ca;
+  --purple:#bd83ff;
+  --pink:#f078bd;
+  --green:#65d9a8;
+  --red:#ff718d;
+}
+* { box-sizing:border-box; }
+body {
+  margin:0;
+  padding:18px;
+  min-height:100vh;
+  background:radial-gradient(ellipse at 10% 0%,#392052,transparent 35%),var(--bg);
+  color:var(--text);
+  font:15px/1.5 system-ui,sans-serif;
+}
+button,input,select,textarea { font:inherit; }
+button { cursor:pointer; }
+.shell { max-width:1200px; margin:auto; }
+header {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  flex-wrap:wrap;
+  gap:15px;
+  margin-bottom:18px;
+}
+h1 { margin:0; font-size:27px; }
+h2 { margin:0 0 8px; }
+h3 { margin:0 0 12px; }
+.sub,.hint { color:var(--muted); font-size:13px; }
+.status,.card,.side,.login {
+  background:linear-gradient(160deg,#211a32,#171323);
+  border:1px solid var(--line);
+  border-radius:16px;
+}
+.status { padding:8px 13px; color:var(--green); }
+.layout { display:grid; grid-template-columns:220px minmax(0,1fr); gap:16px; }
+.side { padding:12px; height:max-content; }
+.nav { display:grid; gap:7px; }
+.nav button {
+  text-align:left;
+  color:var(--muted);
+  background:transparent;
+  border:1px solid transparent;
+  border-radius:10px;
+  padding:11px;
+}
+.nav button.active,.nav button:hover {
+  background:#342447;
+  border-color:#79539e;
+  color:var(--text);
+}
+.main { min-width:0; }
+.hero,.card { padding:19px; margin-bottom:14px; }
+.hero {
+  border:1px solid #684c88;
+  border-radius:16px;
+  background:linear-gradient(100deg,#241534,#241534cc);
+}
+.hero p { color:#d5c5e9; margin-bottom:0; }
+.card { background:linear-gradient(160deg,#211a32,#171323); }
+.field { display:grid; gap:5px; margin-bottom:13px; }
+label { color:var(--muted); font-size:12px; }
+input,select,textarea {
+  width:100%;
+  color:var(--text);
+  background:#120f1e;
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:11px;
+}
+textarea { min-height:100px; resize:vertical; }
+input:focus,select:focus,textarea:focus { outline:1px solid var(--purple); }
+.row,.grid,.stats {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+}
+.stats { grid-template-columns:repeat(3,minmax(0,1fr)); margin-bottom:14px; }
+.stat { background:#171323; border:1px solid var(--line); border-radius:12px; padding:13px; }
+.stat strong { display:block; font-size:23px; }
+.stat span { color:var(--muted); font-size:12px; }
+.btn {
+  padding:10px 14px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  color:var(--text);
+  background:#302340;
+  font-weight:650;
+}
+.btn.primary { background:linear-gradient(120deg,#c08aff,#e18ac8); color:#21142c; border:0; }
+.btn.danger { background:#5a2437; border-color:#a74464; }
+.actions { display:flex; flex-wrap:wrap; gap:9px; margin-top:12px; }
+.notice { padding:12px; border:1px solid #73548e; background:#2b1e3c; border-radius:10px; margin:10px 0; }
+.hidden { display:none!important; }
+.error { color:#ffb2c0; }
+.success { color:var(--green); }
+.memberline,.logline,.purif {
+  display:flex; justify-content:space-between; align-items:center;
+  gap:12px; padding:10px 2px; border-bottom:1px solid var(--line);
+}
+.tag { border:1px solid var(--line); border-radius:99px; padding:3px 8px; font-size:11px; color:var(--muted); }
+.tag.good { color:var(--green); }
+.login { max-width:480px; margin:7vh auto; padding:22px; }
+.login p { color:var(--muted); }
+@media(max-width:760px) {
+  body { padding:10px; }
+  .layout { grid-template-columns:1fr; }
+  .nav { grid-template-columns:repeat(3,minmax(0,1fr)); }
+  .nav button { text-align:center; font-size:11px; padding:8px 4px; }
+  .row,.grid { grid-template-columns:1fr; }
+  .stats { grid-template-columns:repeat(3,minmax(0,1fr)); }
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<header>
+  <div>
+    <h1>🦋 Papillon Ombre</h1>
+    <div class="sub">Centre de contrôle · Miraculous × Digital Circus</div>
+  </div>
+  <div class="status" id="status">● Déconnecté</div>
+</header>
+
+<section id="login" class="login">
+  <h2>Connexion sécurisée</h2>
+  <p>Connecte-toi au panneau de ton bot Discord.</p>
+
+  <div class="field">
+    <label>Adresse de l'API Render</label>
+    <input id="apiUrl" type="url" value="https://l-akuma.onrender.com">
+  </div>
+
+  <div class="field">
+    <label>Identifiant du serveur Discord</label>
+    <input id="guildId" placeholder="Identifiant du serveur">
+  </div>
+
+  <div class="field">
+    <label>Mot de passe du panneau</label>
+    <input id="password" type="password" autocomplete="current-password">
+  </div>
+
+  <button class="btn primary" id="loginBtn">Se connecter</button>
+  <p id="loginError" class="hint error"></p>
+  <p class="hint">Ne colle jamais ton token Discord dans ce panneau.</p>
+</section>
+
+<div id="app" class="layout hidden">
+
+<aside class="side">
+  <nav class="nav" id="nav">
+    <button class="active" data-view="home">🏠 Accueil</button>
+    <button data-view="akuma">🦋 Akuma</button>
+    <button data-view="amok">🪶 Amok</button>
+    <button data-view="messages">✉️ Messages</button>
+    <button data-view="event">🎪 Événement</button>
+    <button data-view="journal">🐞 Journal</button>
+  </nav>
+  <button class="btn" id="logoutBtn" style="width:100%;margin-top:12px">Déconnexion</button>
+</aside>
+
+<main class="main">
+
+<section class="view" id="view-home">
+  <div class="hero">
+    <h2>Bienvenue dans ton univers</h2>
+    <p>Contrôle les Akumas, les Amoks et l'événement Digital Circus × Miraculous.</p>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><strong id="statMembers">—</strong><span>Membres</span></div>
+    <div class="stat"><strong id="statPurif">—</strong><span>Purifications</span></div>
+    <div class="stat"><strong id="statEvent">—</strong><span>Événement</span></div>
+  </div>
+
+  <div class="card">
+    <h3>Dernières actions</h3>
+    <div id="recentLogs" class="hint">Chargement…</div>
+  </div>
+</section>
+
+<section class="view hidden" id="view-akuma">
+  <div class="hero">
+    <h2>🦋 Gestion des Akumas</h2>
+    <p>Choisis un membre, une émotion et un pouvoir.</p>
+  </div>
+
+  <div class="card">
+    <div class="field">
+      <label>Membre à akumatiser</label>
+      <select id="akumaMember"></select>
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label>Émotion</label>
+        <input id="emotion" placeholder="Colère, tristesse, jalousie…">
+      </div>
+      <div class="field">
+        <label>Pouvoir</label>
+        <select id="power">
+          <option value="">Sans pouvoir précis</option>
+          <option value="marionnettiste">Marionnettiste</option>
+          <option value="dark-cupid">Dark Cupid</option>
+          <option value="sandboy">Sandboy</option>
+          <option value="pixelator">Pixelator</option>
+          <option value="timebreaker">Timebreaker</option>
+          <option value="reflekta">Reflekta</option>
+          <option value="gamer">Gamer</option>
+          <option value="evillustrator">Evillustrator</option>
+          <option value="stoneheart">Stoneheart</option>
+          <option value="animan">Animan</option>
+          <option value="lady-wifi">Lady Wifi</option>
+          <option value="guitar-villain">Guitar Villain</option>
+          <option value="glace">Glace</option>
+          <option value="mime">Mime</option>
+          <option value="simon-says">Simon Says</option>
+          <option value="copycat">Copycat</option>
+          <option value="oblivio">Oblivio</option>
+          <option value="stormy-weather">Stormy Weather</option>
+          <option value="rogercop">Rogercop</option>
+          <option value="jax-chaos">🐰 Jax Chaos — événement spécial</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Message privé avant l'akumatisation</label>
+      <textarea id="akumaDm">🦋 {name}, ton émotion de {emotion} m'a appelé. Je t'offre le pouvoir de {power}. Rejoins-moi…</textarea>
+      <span class="hint">Variables : {name}, {emotion}, {power}</span>
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label>Durée en minutes (0 = sans limite)</label>
+        <input id="duration" type="number" min="0" max="10080" value="0">
+      </div>
+      <div class="field">
+        <label>Salon d'annonce</label>
+        <select id="announceChannel"><option value="">Aucune annonce</option></select>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Annonce publique</label>
+      <textarea id="announcement">🦋 {user} a été akumatisé(e) ! Émotion : {emotion}. Pouvoir : {power}.</textarea>
+    </div>
+
+    <label><input type="checkbox" id="changeNick" style="width:auto"> Modifier temporairement le pseudo</label>
+    <div class="field">
+      <label>Format du pseudo</label>
+      <input id="nickFormat" value="🦋 {name}">
+    </div>
+
+    <div class="actions">
+      <button class="btn primary" id="akumatizeBtn">Envoyer le message puis akumatiser</button>
+      <button class="btn danger" id="purifyBtn">Purifier le membre</button>
+      <button class="btn" id="refreshMembers">Actualiser les membres</button>
+    </div>
+    <p id="akumaResult" class="hint"></p>
+  </div>
+</section>
+
+<section class="view hidden" id="view-amok">
+  <div class="hero">
+    <h2>🪶 Gestion des Amoks</h2>
+    <p>Un membre doit être akumatisé pour recevoir un Amok.</p>
+  </div>
+  <div class="card">
+    <div class="field">
+      <label>Membre</label>
+      <select id="amokMember"></select>
+    </div>
+    <div class="field">
+      <label>Amok</label>
+      <select id="amok">
+        <option value="stoneheart">Stoneheart</option>
+        <option value="dark-owl">Dark Owl</option>
+        <option value="evillustrator">Evillustrator</option>
+        <option value="bubbler">Bubbler</option>
+        <option value="rogercop">Rogercop</option>
+        <option value="sandboy">Sandboy</option>
+        <option value="antibug">Antibug</option>
+        <option value="reflekta">Reflekta</option>
+        <option value="princess-fragrance">Princess Fragrance</option>
+        <option value="pharaoh">Pharaoh</option>
+        <option value="miraculous-queen">Miraculous Queen</option>
+        <option value="timebreaker">Timebreaker</option>
+      </select>
+    </div>
+    <div class="actions">
+      <button class="btn primary" id="giveAmok">Attribuer l'Amok</button>
+      <button class="btn" id="removeAmok">Retirer l'Amok</button>
+    </div>
+    <p id="amokResult" class="hint"></p>
+    <h3>Membres akumatisés</h3>
+    <div id="amokList" class="hint">Chargement…</div>
+  </div>
+</section>
+
+<section class="view hidden" id="view-messages">
+  <div class="hero">
+    <h2>✉️ Messages privés</h2>
+    <p>Envoie un message privé à un membre du serveur.</p>
+  </div>
+  <div class="card">
+    <div class="field">
+      <label>Destinataire</label>
+      <select id="dmMember"></select>
+    </div>
+    <div class="field">
+      <label>Message</label>
+      <textarea id="dmText" placeholder="Écris ton message…"></textarea>
+    </div>
+    <button class="btn primary" id="sendDm">Envoyer</button>
+    <p id="dmResult" class="hint"></p>
+  </div>
+</section><section class="view hidden" id="view-event">
+  <div class="hero">
+    <h2>🎪 Digital Circus × Miraculous</h2>
+    <p>Contrôle l'histoire, l'arrivée de Jax Chaos et les fragments du Lucky Charm.</p>
+  </div>
+
+  <div class="card">
+    <div class="notice" id="eventState">Événement : inconnu</div>
+    <div class="notice" id="fragmentProgress">Fragments : 0/4</div>
+
+    <div class="field">
+      <label>Salon d'annonce</label>
+      <select id="eventChannel">
+        <option value="">Ne pas publier d'annonce</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>1. Contexte de l'histoire — premier message</label>
+      <textarea id="eventContext" rows="9">🎪 UNE FAILLE ENTRE DEUX MONDES…
+
+Ladybug et Chat Noir s'apprêtaient à rentrer chez eux lorsqu'une étrange faille numérique apparut dans le ciel.
+
+Aspirés par cette lumière, ils découvrirent un univers totalement différent : le Digital Circus.
+
+Caine les accueillit avec enthousiasme et leur annonça qu'ils étaient ses nouveaux invités.
+
+Mais une présence mystérieuse observait déjà leur arrivée…
+
+Papillon Ombre avait repéré les deux héros. Dans les coulisses, Jax semblait lui aussi préparer quelque chose.
+
+Pour retrouver leur chemin, Ladybug et Chat Noir devront découvrir les secrets du cirque et réunir quatre fragments mystérieux.
+
+Le Lucky Charm restera verrouillé tant que les quatre fragments ne seront pas réunis.
+
+Le spectacle peut commencer…</textarea>
+    </div>
+
+    <button class="btn primary" id="startEvent">Démarrer et envoyer le contexte</button>
+
+    <div class="field" style="margin-top:18px">
+      <label>2. Message de lancement — envoi séparé</label>
+      <textarea id="eventLaunchMessage" rows="6">🎪 LE CIRQUE N'EST PLUS AUSSI ACCUEILLANT…
+
+Caine a deux nouveaux invités à présenter : Ladybug et Chat Noir !
+
+Mais une étrange énergie se propage dans les coulisses…
+
+Jax semble particulièrement intéressé par ces nouveaux visiteurs. 🐰
+
+Et une présence mystérieuse observe déjà la scène… 🦋
+
+Restez attentifs. Le moindre indice pourrait devenir essentiel.</textarea>
+    </div>
+
+    <div class="actions">
+      <button class="btn primary" id="launchEvent">Envoyer le lancement</button>
+      <button class="btn danger" id="endEvent">Terminer l'événement</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>🐞 Les quatre fragments du Lucky Charm</h3>
+    <p class="hint">Les fragments deviennent accessibles après l'akumatisation de Jax Chaos.</p>
+
+    <div class="field">
+      <label>Membre qui a trouvé le fragment</label>
+      <select id="fragmentMember"></select>
+    </div>
+
+    <div class="field">
+      <label>Personnage</label>
+      <select id="fragmentCharacter">
+        <option>Ladybug</option>
+        <option>Chat Noir</option>
+        <option>Pomni</option>
+        <option>Ragatha</option>
+        <option>Jax</option>
+        <option>Zooble</option>
+        <option>Gangle</option>
+        <option>Kinger</option>
+        <option>Caine</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Fragment retrouvé</label>
+      <select id="fragment">
+        <option value="Le ticket doré">🎟️ Le ticket doré</option>
+        <option value="Le masque brisé">🎭 Le masque brisé</option>
+        <option value="La clé du chapiteau">🗝️ La clé du chapiteau</option>
+        <option value="L’étoile du Lucky Charm">🐞 L'étoile du Lucky Charm</option>
+      </select>
+    </div>
+
+    <button class="btn primary" id="submitFragment">Valider le fragment</button>
+    <p id="fragmentResult" class="hint"></p>
+    <div id="fragmentList" class="hint">Aucun fragment récupéré.</div>
+  </div>
+</section>
+
+<section class="view hidden" id="view-journal">
+  <div class="hero">
+    <h2>✨ Journal et purifications</h2>
+    <p>Historique des actions enregistrées par le panneau.</p>
+  </div>
+  <div class="card">
+    <button class="btn" id="refreshJournal">Actualiser</button>
+    <h3 style="margin-top:18px">Purifications</h3>
+    <div id="purificationList" class="hint">Chargement…</div>
+  </div>
+  <div class="card">
+    <h3>Journal général</h3>
+    <div id="allLogs" class="hint">Chargement…</div>
+  </div>
+</section>
+
+</main>
+</div>
+</div>
+
+<script>
+(() => {
+'use strict';
+
+const $ = id => document.getElementById(id);
+
+let apiBase = '';
+let guildId = localStorage.getItem('papillon.guild') || '';
+let token = sessionStorage.getItem('papillon.session') || '';
+let members = [];
+let channels = [];
+
+$('guildId').value = guildId;
+
+function status(message, connected = false) {
+  $('status').textContent =
+    (connected ? '● Connecté · ' : '● ') + message;
+}
+
+function msg(id, message, ok = false) {
+  $(id).textContent = message;
+  $(id).className = 'hint ' + (ok ? 'success' : 'error');
+}
+
+async function request(path, method = 'GET', data = {}) {
+  const headers = {};
+  let body;
+
+  if (method !== 'GET') {
+    headers['Content-Type'] = 'application/json';
+    body = JSON.stringify({ ...data, guildId });
+  }
+
+  if (token) {
+    headers.Authorization = 'Bearer ' + token;
+  }
+
+  const target = method === 'GET'
+    ? path + (path.includes('?') ? '&' : '?') +
+      'guildId=' + encodeURIComponent(guildId)
+    : path;
+
+  let response;
+
+  try {
+    response = await fetch(apiBase + target, {
+      method,
+      headers,
+      body,
+      mode: 'cors'
+    });
+  } catch (error) {
+    throw new Error(
+      'Impossible de joindre Render. Vérifie que le serveur est démarré et que ALLOWED_ORIGIN autorise ton site.'
+    );
+  }
+
+  const result = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(
+      result.error || 'Erreur API HTTP ' + response.status
+    );
+  }
+
+  return result;
+}
+
+function show(view) {
+  document.querySelectorAll('.view').forEach(element => {
+    element.classList.add('hidden');
+  });
+
+  $('view-' + view).classList.remove('hidden');
+
+  document.querySelectorAll('#nav button').forEach(button => {
+    button.classList.toggle(
+      'active',
+      button.dataset.view === view
+    );
+  });
+}
+
+$('nav').addEventListener('click', event => {
+  const button = event.target.closest('button[data-view]');
+  if (button) show(button.dataset.view);
+});
+
+function fillMemberSelect(id, placeholder = 'Choisir un membre') {
+  const select = $(id);
+  const oldValue = select.value;
+
+  select.replaceChildren(new Option(placeholder, ''));
+
+  for (const member of members) {
+    const option = new Option(
+      member.name + ' (@' + member.username + ')' +
+      (member.akuma ? ' · 🦋 akumatisé' : ''),
+      member.id
+    );
+
+    select.add(option);
+  }
+
+  if (members.some(member => member.id === oldValue)) {
+    select.value = oldValue;
+  }
+}
+
+async function loadMembers() {
+  const result = await request('/api/members');
+  members = result.members || [];
+
+  for (const id of [
+    'akumaMember',
+    'amokMember',
+    'dmMember',
+    'fragmentMember'
+  ]) {
+    fillMemberSelect(id);
+  }
+
+  $('statMembers').textContent = members.length;
+  renderAmoks();
+}
+
+async function loadChannels() {
+  const result = await request('/api/channels');
+  channels = result.channels || [];
+
+  for (const id of ['announceChannel', 'eventChannel']) {
+    const select = $(id);
+    const oldValue = select.value;
+
+    select.replaceChildren(
+      new Option('Aucune annonce', '')
+    );
+
+    for (const channel of channels) {
+      select.add(
+        new Option('#' + channel.name, channel.id)
+      );
+    }
+
+    select.value = oldValue;
+  }
+}
+
+function renderAmoks() {
+  const box = $('amokList');
+  box.replaceChildren();
+
+  const list = members.filter(member =>
+    (member.amoks && member.amoks.length) || member.akuma
+  );
+
+  if (!list.length) {
+    box.textContent = 'Aucun membre akumatisé ou porteur d’Amok.';
+    return;
+  }
+
+  for (const member of list) {
+    const row = document.createElement('div');
+    row.className = 'memberline';
+
+    const name = document.createElement('span');
+    name.textContent = member.name;
+
+    const tag = document.createElement('span');
+    tag.className = 'tag good';
+    tag.textContent = member.amoks && member.amoks.length
+      ? member.amoks.join(', ')
+      : 'Akumatisé';
+
+    row.append(name, tag);
+    box.append(row);
+  }
+}
+
+function renderLogs(logs) {
+  const box = $('allLogs');
+  box.replaceChildren();
+
+  if (!logs.length) {
+    box.textContent = 'Aucune action enregistrée.';
+    return;
+  }
+
+  for (const log of logs.slice(0, 50)) {
+    const row = document.createElement('div');
+    row.className = 'logline';
+
+    const time = document.createElement('span');
+    time.className = 'sub';
+    time.textContent = new Date(log.at).toLocaleString('fr-FR');
+
+    const text = document.createElement('span');
+    text.textContent = log.text;
+
+    row.append(time, text);
+    box.append(row);
+  }
+}
+
+function renderFragments(event) {
+  const fragments = event.fragments || [];
+  const count = Math.min(fragments.length, 4);
+
+  $('fragmentProgress').textContent =
+    'Fragments retrouvés : ' + count + '/4' +
+    (event.luckyCharmUnlocked ? ' · 🐞 Lucky Charm débloqué !' : '');
+
+  const box = $('fragmentList');
+  box.replaceChildren();
+
+  if (!fragments.length) {
+    box.textContent = event.fragmentsUnlocked
+      ? 'Les missions peuvent commencer. Aucun fragment récupéré.'
+      : 'Les fragments sont encore verrouillés.';
+    return;
+  }
+
+  for (const fragment of fragments) {
+    const row = document.createElement('div');
+    row.className = 'memberline';
+
+    const name = document.createElement('span');
+    name.textContent = '✨ ' + fragment;
+
+    const tag = document.createElement('span');
+    tag.className = 'tag good';
+    tag.textContent = 'Récupéré';
+
+    row.append(name, tag);
+    box.append(row);
+  }
+}
+
+async function loadState() {
+  const result = await request('/api/state');
+
+  const purifications = result.purifications || [];
+  const logs = result.logs || [];
+  const event = result.event || { active:false, fragments:[] };
+
+  $('statPurif').textContent = purifications.length;
+  $('statEvent').textContent = event.active ? 'Actif' : 'Inactif';
+
+  $('eventState').textContent =
+    'Événement : ' +
+    (event.active ? '🟢 En cours' : '⚪ Inactif') +
+    (event.stage ? ' · étape : ' + event.stage : '') +
+    (event.startedAt
+      ? ' · démarré le ' +
+        new Date(event.startedAt).toLocaleString('fr-FR')
+      : '');
+
+  renderFragments(event);
+
+  const recent = $('recentLogs');
+  recent.replaceChildren();
+
+  if (!logs.length) {
+    recent.textContent = 'Aucune action pour le moment.';
+  } else {
+    for (const log of logs.slice(0, 5)) {
+      const row = document.createElement('div');
+      row.className = 'logline';
+      row.textContent =
+        new Date(log.at).toLocaleTimeString('fr-FR') +
+        ' — ' + log.text;
+      recent.append(row);
+    }
+  }
+
+  const purificationBox = $('purificationList');
+  purificationBox.replaceChildren();
+
+  if (!purifications.length) {
+    purificationBox.textContent = 'Aucune purification enregistrée.';
+  } else {
+    for (const item of purifications) {
+      const row = document.createElement('div');
+      row.className = 'purif';
+      row.textContent =
+        '🐞 ' + item.username + ' — ' + item.status +
+        ' · ' + new Date(item.at).toLocaleString('fr-FR');
+      purificationBox.append(row);
+    }
+  }
+
+  renderLogs(logs);
+}
+
+async function boot() {
+  apiBase = $('apiUrl').value.trim().replace(/\/+$/, '');
+  guildId = $('guildId').value.trim() || guildId;
+
+  if (!apiBase) throw new Error('Renseigne l’adresse de ton API Render.');
+  if (!guildId) throw new Error('Renseigne l’identifiant du serveur Discord.');
+
+  await request('/api/state');
+
+  $('login').classList.add('hidden');
+  $('app').classList.remove('hidden');
+
+  status('Bot et panneau synchronisés', true);
+
+  await Promise.all([
+    loadMembers(),
+    loadChannels(),
+    loadState()
+  ]);
+
+  show('home');
+}
+
+$('loginBtn').onclick = async () => {
+  $('loginError').textContent = '';
+
+  try {
+    apiBase = $('apiUrl').value.trim().replace(/\/+$/, '');
+    guildId = $('guildId').value.trim();
+
+    if (!apiBase) throw new Error('Renseigne l’adresse Render.');
+    if (!guildId) throw new Error('Renseigne l’identifiant du serveur.');
+
+    const password = $('password').value;
+    if (!password) throw new Error('Renseigne le mot de passe.');
+
+    const result = await request('/api/login', 'POST', { password });
+
+    if (!result.token) {
+      throw new Error('Le serveur n’a pas renvoyé de jeton.');
+    }
+
+    token = result.token;
+    sessionStorage.setItem('papillon.session', token);
+    localStorage.setItem('papillon.guild', guildId);
+
+    $('password').value = '';
+
+    await boot();
+  } catch (error) {
+    token = '';
+    sessionStorage.removeItem('papillon.session');
+    $('loginError').textContent = error.message;
+    status('Connexion impossible');
+  }
+};
+
+$('logoutBtn').onclick = () => {
+  token = '';
+  sessionStorage.removeItem('papillon.session');
+
+  $('app').classList.add('hidden');
+  $('login').classList.remove('hidden');
+
+  status('Déconnecté');
+};
+
+$('refreshMembers').onclick = () =>
+  loadMembers().catch(error => msg('akumaResult', error.message));
+
+$('akumatizeBtn').onclick = async () => {
+  try {
+    const userId = $('akumaMember').value;
+    if (!userId) throw new Error('Choisis un membre.');
+
+    const powerKey = $('power').value;
+
+    if (powerKey === 'jax-chaos') {
+      const eventState = await request('/api/state');
+
+      if (!eventState.event || !eventState.event.active) {
+        throw new Error('Démarre d’abord l’événement Digital Circus × Miraculous.');
+      }
+    }
+
+    await request('/api/akumatize', 'POST', {
+      userId,
+      emotion: $('emotion').value,
+      powerKey,
+      dm: $('akumaDm').value,
+      durationMin: Number($('duration').value) || 0,
+      channelId: $('announceChannel').value,
+      announcement: $('announcement').value,
+      changeNick: $('changeNick').checked,
+      nickFormat: $('nickFormat').value
+    });
+
+    msg(
+      'akumaResult',
+      powerKey === 'jax-chaos'
+        ? '🐰 Jax Chaos a été akumatisé. Les fragments sont débloqués.'
+        : 'Message privé envoyé, puis membre akumatisé !',
+      true
+    );
+
+    await Promise.all([loadMembers(), loadState()]);
+  } catch (error) {
+    msg('akumaResult', error.message);
+  }
+};
+
+$('purifyBtn').onclick = async () => {
+  try {
+    const userId = $('akumaMember').value;
+    if (!userId) throw new Error('Choisis un membre.');
+
+    await request('/api/purify', 'POST', { userId });
+
+    msg('akumaResult', 'Membre purifié.', true);
+
+    await Promise.all([loadMembers(), loadState()]);
+  } catch (error) {
+    msg('akumaResult', error.message);
+  }
+};
+
+$('giveAmok').onclick = async () => {
+  try {
+    const userId = $('amokMember').value;
+    if (!userId) throw new Error('Choisis un membre.');
+
+    await request('/api/amok', 'POST', {
+      userId,
+      amokKey: $('amok').value
+    });
+
+    msg('amokResult', 'Amok attribué.', true);
+    await loadMembers();
+  } catch (error) {
+    msg('amokResult', error.message);
+  }
+};
+
+$('removeAmok').onclick = async () => {
+  try {
+    const userId = $('amokMember').value;
+    if (!userId) throw new Error('Choisis un membre.');
+
+    await request('/api/unamok', 'POST', { userId });
+
+    msg('amokResult', 'Amok retiré.', true);
+    await loadMembers();
+  } catch (error) {
+    msg('amokResult', error.message);
+  }
+};
+
+$('sendDm').onclick = async () => {
+  try {
+    const userId = $('dmMember').value;
+    if (!userId) throw new Error('Choisis un destinataire.');
+
+    const message = $('dmText').value.trim();
+    if (!message) throw new Error('Écris un message.');
+
+    await request('/api/dm', 'POST', { userId, message });
+
+    msg('dmResult', 'Message privé envoyé.', true);
+    $('dmText').value = '';
+
+    await loadState();
+  } catch (error) {
+    msg('dmResult', error.message);
+  }
+};
+
+$('startEvent').onclick = async () => {
+  try {
+    if (!$('eventChannel').value) {
+      throw new Error('Choisis un salon pour publier le contexte.');
+    }
+
+    await request('/api/event/start', 'POST', {
+      channelId: $('eventChannel').value,
+      message: $('eventContext').value
+    });
+
+    await loadState();
+    alert('Contexte envoyé. Tu peux envoyer le lancement séparément.');
+  } catch (error) {
+    alert(error.message);
+  }
+};
+
+$('launchEvent').onclick = async () => {
+  try {
+    if (!$('eventChannel').value) {
+      throw new Error('Choisis un salon pour publier le lancement.');
+    }
+
+    await request('/api/event/launch', 'POST', {
+      channelId: $('eventChannel').value,
+      message: $('eventLaunchMessage').value
+    });
+
+    await loadState();
+    alert('Message de lancement envoyé.');
+  } catch (error) {
+    alert(error.message);
+  }
+};
+
+$('endEvent').onclick = async () => {
+  try {
+    await request('/api/event/end', 'POST', {
+      channelId: $('eventChannel').value,
+      message: '🐞✨ L’événement Digital Circus × Miraculous est terminé. Le cirque retrouve son calme !'
+    });
+
+    await loadState();
+    alert('Événement terminé.');
+  } catch (error) {
+    alert(error.message);
+  }
+};
+
+$('submitFragment').onclick = async () => {
+  try {
+    const userId = $('fragmentMember').value;
+    if (!userId) throw new Error('Choisis le membre qui a trouvé le fragment.');
+
+    await request('/api/fragments', 'POST', {
+      userId,
+      character: $('fragmentCharacter').value,
+      fragment: $('fragment').value
+    });
+
+    msg('fragmentResult', 'Fragment enregistré !', true);
+    await loadState();
+  } catch (error) {
+    msg('fragmentResult', error.message);
+  }
+};
+
+$('refreshJournal').onclick = () =>
+  loadState().catch(error => alert(error.message));
+
+if (token) {
+  apiBase = $('apiUrl').value.trim().replace(/\/+$/, '');
+  boot().catch(error => {
+    token = '';
+    sessionStorage.removeItem('papillon.session');
+    $('login').classList.remove('hidden');
+    $('app').classList.add('hidden');
+    $('loginError').textContent = error.message;
+    status('Connexion impossible');
+  });
+}
+
+setInterval(() => {
+  if (token && !$('app').classList.contains('hidden')) {
+    loadState().catch(() => {});
+  }
+}, 15000);
+
+})();
+</script>
+</body>
+</html>
