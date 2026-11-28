@@ -1,0 +1,16 @@
+
+{
+  "name": "papillon-ombre-miraculous-digital-circus",
+  "version": "1.0.0",
+  "description": "Bot Discord et panneau Papillon Ombre pour l'événement Miraculous x The Amazing Digital Circus",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "discord.js": "^14.25.1"
+  }
+}
